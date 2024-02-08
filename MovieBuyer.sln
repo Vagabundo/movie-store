@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieBuyerMin", "MovieBuyerMin\MovieBuyer.csproj", "{23832281-8759-4FB1-8F11-965EF8890116}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FEC1EB49-BCBC-435E-ADBF-9DBBAEFEBFB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovieStore.Api", "src\MovieStore.Api\MovieStore.Api.csproj", "{A7CE5DA5-15C1-4610-B574-76E0202E4F3C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{23832281-8759-4FB1-8F11-965EF8890116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23832281-8759-4FB1-8F11-965EF8890116}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23832281-8759-4FB1-8F11-965EF8890116}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23832281-8759-4FB1-8F11-965EF8890116}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7CE5DA5-15C1-4610-B574-76E0202E4F3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7CE5DA5-15C1-4610-B574-76E0202E4F3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7CE5DA5-15C1-4610-B574-76E0202E4F3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7CE5DA5-15C1-4610-B574-76E0202E4F3C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A7CE5DA5-15C1-4610-B574-76E0202E4F3C} = {FEC1EB49-BCBC-435E-ADBF-9DBBAEFEBFB3}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,22 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+
+version: '3.4'
+
+services:
+  # moviebuyer:
+  #   image: moviebuyer
+  moviestore:
+    image: moviestore
+    build:
+      context: .
+      # dockerfile: MovieBuyerMin/Dockerfile
+      dockerfile: src/MovieStore.Api/Dockerfile
+      args:
+        - configuration=Debug
+    ports:
+      - 5004:5004
+      # - 5252:5252
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
