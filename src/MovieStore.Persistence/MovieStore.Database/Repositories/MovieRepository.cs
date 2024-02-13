@@ -61,6 +61,7 @@ public class MovieRepository : IMovieRepository
             dbMovie.Genre = movie.Genre;
             dbMovie.Country = movie.Country;
             dbMovie.Year = movie.Year;
+            dbMovie.Cost = movie.Cost;
 
             await _dbContext.SaveChangesAsync();
         }

@@ -7,4 +7,10 @@ public class RegisterMovieRequest
     public string Genre { get; set; }
     public string Country { get; set; }
     public int Year { get; set; }
+    public double Cost { get; set; }
+}
+
+public class ModifyMovieRequest : RegisterMovieRequest
+{
+    public Guid Id { get; set; }
 }

@@ -40,6 +40,25 @@ public class MovieController : ControllerBase
         }
     }
 
+    [HttpPut("modify")]
+    [Authorize]
+    public async Task<IActionResult> Modify([FromBody] ModifyMovieRequest model)
+    {
+        _logger.LogInformation($"Movie modification request received: {JsonConvert.SerializeObject(model)}");
+
+        var result = await _movieService.Modify(Mapper.Map<ModifyMovieRequest, Movie>(model));
+        //var result = new { Succeeded = true, Errors = ""};
+        if (result is not null)
+        {
+            return Ok();
+        }
+        else
+        {
+            //return BadRequest(result.Errors);
+            return BadRequest();
+        }
+    }
+
     [HttpGet]
     public async Task<IActionResult> Get()
     {
@@ -54,7 +73,7 @@ public class MovieController : ControllerBase
         }
 
         var moviesDic = movies
-            .Select(Mapper.Map<Movie, RegisterMovieRequest>)
+            .Select(Mapper.Map<Movie, ModifyMovieRequest>)
             .GroupBy(movie => movie.Genre)
             .ToDictionary(
                 group => group.Key,
@@ -82,7 +101,7 @@ public class MovieController : ControllerBase
         }
 
         var moviesDic = movies
-            .Select(Mapper.Map<Movie, RegisterMovieRequest>)
+            .Select(Mapper.Map<Movie, ModifyMovieRequest>)
             .GroupBy(movie => movie.Genre)
             .ToDictionary(
                 group => group.Key,
