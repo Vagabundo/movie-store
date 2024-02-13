@@ -9,7 +9,7 @@
             "program": "${workspaceFolder}/src/MovieStore.Api/bin/Debug/net8.0/MovieStore.Api.dll",
             // "program": "${workspaceFolder}/MovieBuyerMin/bin/Debug/net8.0/MovieBuyer.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/MovieStore.Api",
+            "cwd": "${workspaceFolder}/src/MovieStore.Api",
             // "cwd": "${workspaceFolder}/MovieBuyerMin",
             "stopAtEntry": false,
             "serverReadyAction": {
