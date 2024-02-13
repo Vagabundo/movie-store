@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
-using MovieStore.Data;
 using MovieStore.Database;
 using Microsoft.Net.Http.Headers;
+using MovieStore.Api.Data;
+using MovieStore.Application.Interfaces;
+using MovieStore.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,44 +17,60 @@ var jwtOptions = builder.Configuration
 	.GetSection("Jwt")
     .Get<JwtOptions>();
 
-builder.Services.AddDbContextPool<IdentityContext>(options => 
-{
-    options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteIdentityDatabase"));
-});
+builder.Services
+    .AddDbContextPool<IdentityContext>(options => 
+    {
+        options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteIdentityDatabase"));
+    })
+    .AddDbContextPool<MovieDbContext>(options => 
+    {
+        options.UseSqlite(builder.Configuration.GetConnectionString("SQLiteMoviesDatabase"));
+    });
 
 builder.Services
     .AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<IdentityContext>()
     .AddDefaultTokenProviders();
 
-// Add services to the container.
+/************************************************
+* Dependency Injection 
+************************************************/
+// Auth
 builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddScoped<UserManager<IdentityUser<Guid>>>();
 builder.Services.AddScoped<SignInManager<IdentityUser<Guid>>>();
 
+// Application
+builder.Services.AddScoped<IMovieService, MovieService>();
 
+// Infrastructure DI only - API needs to DI into Application services
+builder.Services.AddScoped<MovieDbContext>();
+builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+
+
+// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
 builder.Services
-.AddAuthentication(options => 
-{
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options => 
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    .AddAuthentication(options => 
     {
-        ValidIssuer = jwtOptions?.Issuer,
-        ValidAudience = jwtOptions?.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions?.SigningKey ?? "NoKey")),
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true
-    };
-});
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options => 
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = jwtOptions?.Issuer,
+            ValidAudience = jwtOptions?.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions?.SigningKey ?? "NoKey")),
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true
+        };
+    });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

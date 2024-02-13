@@ -7,7 +7,7 @@ using MovieStore.Database;
 
 #nullable disable
 
-namespace MovieStore.Api.Migrations
+namespace MovieStore.Database.Migrations
 {
     [DbContext(typeof(IdentityContext))]
     partial class IdentityContextModelSnapshot : ModelSnapshot

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using MovieStore.Data;
+using MovieStore.Api.Data;
 
 namespace MovieStore.Api.Controllers;
 
@@ -13,17 +13,20 @@ namespace MovieStore.Api.Controllers;
 [Route("[controller]")]
 public class AuthController : ControllerBase
 {
+    private readonly ILogger<AuthController> _logger;
     private readonly UserManager<IdentityUser<Guid>> _userManager;
     private readonly SignInManager<IdentityUser<Guid>> _signInManager;
     private readonly JwtOptions _jwtOptions;
     private readonly IConfiguration _configuration;
 
     public AuthController(
+        ILogger<AuthController> logger,
         UserManager<IdentityUser<Guid>> userManager,
         SignInManager<IdentityUser<Guid>> signInManager,
         JwtOptions jwtOptions,
         IConfiguration configuration)
     {
+        _logger = logger;
         _userManager = userManager;
         _signInManager = signInManager;
         _jwtOptions = jwtOptions;
@@ -239,9 +242,7 @@ public class AuthController : ControllerBase
         };
 
         var handler = new JwtSecurityTokenHandler();
-        //var jwtToken = handler.CreateToken(token);
         return handler.CreateEncodedJwt(token);
-        //return handler.WriteToken(jwtToken);
     }
 }
 

@@ -8,11 +8,11 @@ using MovieStore.Database;
 
 #nullable disable
 
-namespace MovieStore.Api.Migrations
+namespace MovieStore.Database.Migrations
 {
     [DbContext(typeof(IdentityContext))]
-    [Migration("20240212123631_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20240213182234_IdentityInitialMigration")]
+    partial class IdentityInitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

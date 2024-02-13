@@ -1,4 +1,4 @@
-namespace MovieStore.Data;
+namespace MovieStore.Api.Data;
 public record class JwtOptions(
     string Issuer,
     string Audience,
