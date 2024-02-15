@@ -42,10 +42,12 @@ builder.Services.AddScoped<SignInManager<IdentityUser<Guid>>>();
 
 // Application
 builder.Services.AddScoped<IMovieService, MovieService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 // Infrastructure DI only - API needs to DI into Application services
 builder.Services.AddScoped<MovieDbContext>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 
 // Add services to the container.
@@ -60,6 +62,7 @@ builder.Services
     })
     .AddJwtBearer(options => 
     {
+        //options.Authority = jwtOptions?.Issuer;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidIssuer = jwtOptions?.Issuer,
@@ -120,5 +123,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+//app.MapHub<OrdersHub>("/orderssocket");
 
 app.Run();
