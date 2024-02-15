@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using MovieStore.Api.Data;
 using MovieStore.Api.MappingProfiles;
 using MovieStore.Application.Interfaces;
 using MovieStore.Domain;
+using MovieStore.Hubs;
 using Newtonsoft.Json;
 
 namespace MovieStore.Api.Controllers;
@@ -14,11 +16,13 @@ public class OrderController : ControllerBase
 {
     private readonly ILogger<OrderController> _logger;
     private readonly IOrderService _orderService;
+    private readonly IHubContext<OrderHub> _orderHubContext;
 
-    public OrderController(ILogger<OrderController> logger, IOrderService orderService)
+    public OrderController(ILogger<OrderController> logger, IOrderService orderService,IHubContext<OrderHub> orderHubContext)
     {
         _logger = logger;
         _orderService = orderService;
+        _orderHubContext = orderHubContext;
     }
 
     // [HttpGet]
@@ -58,6 +62,9 @@ public class OrderController : ControllerBase
         {
             dbOrder.PaymentSucceed = true;
             await _orderService.Modify(dbOrder);
+
+            await _orderHubContext.Clients.Group(model.BranchId.ToString()).SendAsync("Order received", JsonConvert.SerializeObject(model.Movies));
+
             return Ok(
                 new OrderResponse
                 {

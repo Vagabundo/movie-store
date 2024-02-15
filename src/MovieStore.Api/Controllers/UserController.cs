@@ -9,6 +9,8 @@ using MovieStore.Api.Data;
 
 namespace MovieStore.Api.Controllers;
 
+// This should go to a different project in the real world but I am just playing around
+
 [ApiController]
 [Route("[controller]")]
 public class AuthController : ControllerBase

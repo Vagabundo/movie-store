@@ -10,6 +10,7 @@ using Microsoft.Net.Http.Headers;
 using MovieStore.Api.Data;
 using MovieStore.Application.Interfaces;
 using MovieStore.Application.Services;
+using MovieStore.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,12 +44,16 @@ builder.Services.AddScoped<SignInManager<IdentityUser<Guid>>>();
 // Application
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IBranchService, BranchService>();
 
 // Infrastructure DI only - API needs to DI into Application services
 builder.Services.AddScoped<MovieDbContext>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IBranchRepository, BranchRepository>();
 
+
+builder.Services.AddSignalR();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -72,6 +77,24 @@ builder.Services
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+
+                // If the request is for our hub...
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken)
+                    && path.StartsWithSegments("/hubs/orders"))
+                {
+                    // Read the token out of the query string
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -123,6 +146,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-//app.MapHub<OrdersHub>("/orderssocket");
+app.MapHub<OrderHub>("/hubs/orders");
 
 app.Run();
