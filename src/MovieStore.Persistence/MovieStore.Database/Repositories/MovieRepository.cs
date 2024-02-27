@@ -1,15 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using MovieStore.Application.Interfaces;
+using MovieStore.Database.Cache;
 using MovieStore.Domain;
 
 namespace MovieStore.Database;
 
 public class MovieRepository : IMovieRepository
 {
-    private MovieDbContext _dbContext;
-    public MovieRepository(MovieDbContext dbContext)
+    private readonly MovieDbContext _dbContext;
+    private readonly ICacheService _cache;
+    
+    public MovieRepository(MovieDbContext dbContext, ICacheService cache)
     {
         _dbContext = dbContext;
+        _cache = cache;
     }
 
     #region Create
@@ -18,6 +22,15 @@ public class MovieRepository : IMovieRepository
         await _dbContext.Movies.AddAsync(movie);
         await _dbContext.SaveChangesAsync();
 
+        // this or create a bulk set and get by prefix
+        var dbMovies = await _dbContext.Movies
+        .AsNoTracking()
+        .ToListAsync();
+
+        await _cache.SetAsync("movie_" + movie.Id.ToString(), movie);
+        await _cache.SetAsync("movies", dbMovies);
+        
+
         return movie;
     }
     #endregion
@@ -25,17 +38,43 @@ public class MovieRepository : IMovieRepository
     #region Read
     public async Task<IEnumerable<Movie>> GetAll()
     {
-        return await _dbContext.Movies
+        /* //longer, easier to understand version
+        var cachedMovies = await _cache.GetAsync<IEnumerable<Movie>>("movies");
+
+        if (cachedMovies is not null) return cachedMovies;
+
+        var movies = await _dbContext.Movies
         .AsNoTracking()
         .ToListAsync();
+
+        await _cache.SetAsync<IEnumerable<Movie>>("movies", movies);
+
+        return movies;
+        */
+
+        return await _cache.GetAsync(
+            "movies",
+            async () =>
+            {
+                return await _dbContext.Movies
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+        );
     }
 
     public async Task<Movie?> GetById(Guid id)
     {
-        return await _dbContext.Movies
-        .AsNoTracking()
-        .Where(x => x.Id == id)
-        .FirstOrDefaultAsync();
+        return await _cache.GetAsync(
+            $"movie_{id}",
+            async () =>
+            {
+                return await _dbContext.Movies
+                .AsNoTracking()
+                .Where(x => x.Id == id)
+                .FirstAsync();
+            }
+        );
     }
 
     // public async Task<IEnumerable<Movie>> GetByBranch(Guid branchId)
@@ -66,6 +105,14 @@ public class MovieRepository : IMovieRepository
             await _dbContext.SaveChangesAsync();
         }
 
+        //this or create a bulk set and get by prefix
+        var movies = await _dbContext.Movies
+        .AsNoTracking()
+        .ToListAsync();
+
+        await _cache.SetAsync("movie_" + movie.Id.ToString(), movie);
+        await _cache.SetAsync("movies", movies);
+
         return dbMovie;
     }
     #endregion
@@ -81,6 +128,14 @@ public class MovieRepository : IMovieRepository
         {
             movie.IsDeleted = true;
             await _dbContext.SaveChangesAsync();
+
+            // this or create a bulk set and get by prefix
+            var movies = await _dbContext.Movies
+            .AsNoTracking()
+            .ToListAsync();
+
+            await _cache.RemoveAsync("movie_" + id.ToString());
+            await _cache.SetAsync("movies", movies);
         }
 
         return movie;

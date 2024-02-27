@@ -15,6 +15,25 @@ public class OrderRepository : IOrderRepository
     #region Create
     public async Task<Order> Add(Order order)
     {
+        // await _dbContext.AuthUsers.AddAsync(
+        //     new User
+        //     {
+        //         Id = Guid.Parse("5F9E3DE5-3BD2-4725-B8CC-B5E1FAB7165A"),
+        //         Name = "Roberto",
+        //         Email = "robertodelrior@gmail.com"
+        //     });
+
+        // await _dbContext.Branches.AddAsync(
+        //     new Branch 
+        //     {
+        //         Id = Guid.Parse("AAF3DF04-B019-4D91-B8AF-7618DD6823E7"),
+        //         UserId = Guid.Parse("5F9E3DE5-3BD2-4725-B8CC-B5E1FAB7165A"),
+        //         Address = "Calle Paloma, 1",
+        //         City = "Granada",
+        //         Country = "ESPAÑA",
+        //         PostalCode = "18001"
+        //     });
+
         await _dbContext.Orders.AddAsync(order);
         await _dbContext.SaveChangesAsync();
 

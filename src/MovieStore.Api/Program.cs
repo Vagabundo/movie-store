@@ -11,6 +11,7 @@ using MovieStore.Api.Data;
 using MovieStore.Application.Interfaces;
 using MovieStore.Application.Services;
 using MovieStore.Hubs;
+using MovieStore.Database.Cache;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,11 @@ builder.Services
     .AddEntityFrameworkStores<IdentityContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddStackExchangeRedisCache(redisOptions =>
+{
+    redisOptions.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+
 /************************************************
 * Dependency Injection 
 ************************************************/
@@ -48,6 +54,7 @@ builder.Services.AddScoped<IBranchService, BranchService>();
 
 // Infrastructure DI only - API needs to DI into Application services
 builder.Services.AddScoped<MovieDbContext>();
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IBranchRepository, BranchRepository>();

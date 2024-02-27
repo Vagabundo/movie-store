@@ -7,10 +7,55 @@ services:
   #   image: moviebuyer
   moviestore:
     image: moviestore
+    container_name: moviestore
     build:
       context: .
       # dockerfile: MovieBuyerMin/Dockerfile
       dockerfile: src/MovieStore.Api/Dockerfile
     ports:
       - 5004:5004
+      - 7039:7039
       # - 5252:5252
+    volumes:
+      - C:/Users/Roberto/.aspnet/https:/https
+      - ./IdentityDB.db:/app/IdentityDB.db
+      - ./MoviesDB.db:/app/MoviesDB.db
+    environment:
+      - ASPNETCORE_URLS=http://+:5004;https://+:7039
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=secret
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+
+  redis:
+    image: redis:latest
+    container_name: moviestore-redis
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - ./cache-data/dаta:/root/redis
+      - ./cache-data/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=secret
+      - REDIS_PORT=6379
+      - REDIS_DATABASES=16
+
+  # mysql-movies:
+  #   image: mysql:8.3.0
+  #   container_name: moviestore-db
+  #   volumes:
+  #     - ./mysql-data/movies:/var/lib/mysql
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=secret
+  #     - MYSQL_DATABASE=MoviesDB.db
+
+  # mysql-identity:
+  #   image: mysql:8.3.0
+  #   container_name: moviestore-identitydb
+  #   volumes:
+  #     - ./mysql-data/identity:/var/lib/mysql
+  #   ports:
+  #     - 3308:3306
+  #     - 33080:33060
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=secret
+  #     - MYSQL_DATABASE=IdentityDB.db

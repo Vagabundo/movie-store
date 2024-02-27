@@ -14,6 +14,8 @@ commands.txt
 *.db
 *.db-*
 MovieBuyerMin*
+cache-data*
+mysql-data*
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
