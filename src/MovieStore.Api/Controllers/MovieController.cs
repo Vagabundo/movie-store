@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MovieStore.Api.Data;
 using MovieStore.Api.MappingProfiles;
+using MovieStore.Api.Middleware;
 using MovieStore.Application.Interfaces;
 using MovieStore.Domain;
 using Newtonsoft.Json;
@@ -22,7 +23,7 @@ public class MovieController : ControllerBase
     }
 
     [HttpPost("register")]
-    [Authorize]
+    [Authorize(Roles = IdentityData.ManagerUserPolicyName)]
     public async Task<IActionResult> Register([FromBody] RegisterMovieRequest model)
     {
         _logger.LogInformation($"Movie registration request received: {JsonConvert.SerializeObject(model)}");
@@ -41,7 +42,7 @@ public class MovieController : ControllerBase
     }
 
     [HttpPut("modify")]
-    [Authorize]
+    [Authorize(Roles = IdentityData.ManagerUserPolicyName)]
     public async Task<IActionResult> Modify([FromBody] ModifyMovieRequest model)
     {
         _logger.LogInformation($"Movie modification request received: {JsonConvert.SerializeObject(model)}");

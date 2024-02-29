@@ -46,6 +46,7 @@ builder.Services.AddStackExchangeRedisCache(redisOptions =>
 builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddScoped<UserManager<IdentityUser<Guid>>>();
 builder.Services.AddScoped<SignInManager<IdentityUser<Guid>>>();
+builder.Services.AddScoped<RoleManager<IdentityRole<Guid>>>();
 
 // Application
 builder.Services.AddScoped<IMovieService, MovieService>();
@@ -64,7 +65,13 @@ builder.Services.AddSignalR();
 
 // Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(/*options =>
+{
+    options.AddPolicy(IdentityData.AdminUserPolicyName, p =>
+        p.RequireClaim(IdentityData.AdminUserClaimName, "true"));
+    options.AddPolicy(IdentityData.ManagerUserPolicyName, p =>
+        p.RequireClaim(IdentityData.ManagerUserClaimName, "true"));
+}*/);
 builder.Services
     .AddAuthentication(options => 
     {

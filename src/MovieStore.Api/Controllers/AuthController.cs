@@ -1,11 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MovieStore.Api.Data;
+using MovieStore.Api.Middleware;
 
 namespace MovieStore.Api.Controllers;
 
@@ -18,6 +20,7 @@ public class AuthController : ControllerBase
     private readonly ILogger<AuthController> _logger;
     private readonly UserManager<IdentityUser<Guid>> _userManager;
     private readonly SignInManager<IdentityUser<Guid>> _signInManager;
+    private readonly RoleManager<IdentityRole<Guid>> _roleManager;
     private readonly JwtOptions _jwtOptions;
     private readonly IConfiguration _configuration;
 
@@ -25,12 +28,14 @@ public class AuthController : ControllerBase
         ILogger<AuthController> logger,
         UserManager<IdentityUser<Guid>> userManager,
         SignInManager<IdentityUser<Guid>> signInManager,
+        RoleManager<IdentityRole<Guid>> roleManager,
         JwtOptions jwtOptions,
         IConfiguration configuration)
     {
         _logger = logger;
         _userManager = userManager;
         _signInManager = signInManager;
+        _roleManager = roleManager;
         _jwtOptions = jwtOptions;
         _configuration = configuration;
     }
@@ -47,15 +52,18 @@ public class AuthController : ControllerBase
         {
             // Generate JWT token
             var token = GenerateJwtToken(user);
+            _logger.LogInformation($"User {user.UserName} created");
             return Ok(new AccessTokenResponse
             {
                 AccessToken = token,
                 ExpiresIn = 3600,
+                //change this
                 RefreshToken = token
             });
         }
         else
         {
+            _logger.LogInformation($"Creation of user {model.Email} failed");
             return BadRequest(result.Errors);
         }
     }
@@ -66,6 +74,7 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null)
         {
+            _logger.LogInformation($"User {model.Email} login attempt failed"); // and maybe do something to avoid spam/DDoS
             return BadRequest("Invalid email or password.");
         }
 
@@ -73,16 +82,20 @@ public class AuthController : ControllerBase
         if (signInResult.Succeeded)
         {
             // Generate JWT token
-            var token = GenerateJwtToken(user);
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var token = GenerateJwtToken(user, userRoles);
+            _logger.LogInformation($"User {model.Email} successfully logged in");
             return Ok(new AccessTokenResponse
             {
                 AccessToken = token,
                 ExpiresIn = 3600,
+                //change this
                 RefreshToken = token
             });
         }
         else
         {
+            _logger.LogInformation($"User {model.Email} login attempt failed"); // and maybe do something to avoid spam/DDoS
             return BadRequest("Invalid email or password.");
         }
     }
@@ -198,6 +211,69 @@ public class AuthController : ControllerBase
     //     }
     // }
 
+    [HttpPost("roles/add")]
+    [Authorize(Roles = IdentityData.AdminUserPolicyName)]
+    //[Authorize(Policy = IdentityData.AdminUserPolicyName)]
+    //[RequiresClaim(IdentityData.AdminUserClaimName, "true")]
+    public async Task<IActionResult> AddRole(string name)
+    {
+        IdentityResult result = await _roleManager.CreateAsync(new IdentityRole<Guid>(name));
+        if (result.Succeeded)
+        {
+            return Ok($"Role {name} created");
+        }
+        else
+        {
+            return BadRequest($"Role {name} failed to be created");
+        }
+    }
+
+    [HttpPost("roles/addUserRole")]
+    [Authorize(Roles = IdentityData.AdminUserPolicyName)]
+    public async Task<IActionResult> AddUserRole(UpdateUserRoleRequest model)
+    {
+        var user = await _userManager.FindByIdAsync(model.UserId);
+        if (user != null)
+        {
+            var result = await _userManager.AddToRoleAsync(user, model.RoleName);
+            if (result.Succeeded)
+            {
+                return Ok($"Role {model.RoleName} added to {user.UserName}");
+            }
+            else
+            {
+                return BadRequest($"Role {model.RoleName} failed to be added to {user.UserName}");
+            }
+        }
+        else
+        {
+            return BadRequest($"User Id {model.UserId} doesn't exist");
+        }
+    }
+
+    [HttpPost("roles/removeUserRole")]
+    [Authorize(Roles = IdentityData.AdminUserPolicyName)]
+    public async Task<IActionResult> RemoveUserRole(UpdateUserRoleRequest model)
+    {
+        var user = await _userManager.FindByIdAsync(model.UserId);
+        if (user != null)
+        {
+            var result = await _userManager.RemoveFromRoleAsync(user, model.RoleName);
+            if (result.Succeeded)
+            {
+                return Ok($"Role {model.RoleName} removed from {user.UserName}");
+            }
+            else
+            {
+                return BadRequest($"Role {model.RoleName} failed to be removed from {user.UserName}");
+            }
+        }
+        else
+        {
+            return BadRequest($"User Id {model.UserId} doesn't exist");
+        }
+    }
+
     // // Helper method to generate a TOTP secret key
     // private string GenerateTotpSecretKey()
     // {
@@ -222,17 +298,25 @@ public class AuthController : ControllerBase
     //     // Return true if valid, false otherwise
     // }
 
-    private string GenerateJwtToken(IdentityUser<Guid> user)
+    private string GenerateJwtToken(IdentityUser<Guid> user, IList<string>? userRoles = null)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SigningKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? "NoEmail"),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        if (userRoles is not null)
+        {
+            foreach (var userRole in userRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, userRole));
+            }
+        }
 
         var token = new SecurityTokenDescriptor
         {
@@ -258,18 +342,18 @@ public class AccessTokenResponse
 
 public class ConfirmEmailRequest
 {
-    public string UserId { get; set; }
-    public string ConfirmationCode { get; set; }
+    public string UserId { get; }
+    public string ConfirmationCode { get; }
 }
 
 public class Enable2FARequest
 {
-    public string UserId { get; set; }
-    public bool? Enable { get; set; }
-    public string? TwoFactorCode { get; set; }
-    public bool ResetSharedKey { get; set; }
-    public bool ResetRecoveryCodes { get; set; }
-    public bool ForgetMachine { get; set; }
+    public string UserId { get; }
+    public bool? Enable { get; }
+    public string? TwoFactorCode { get; }
+    public bool ResetSharedKey { get; }
+    public bool ResetRecoveryCodes { get; }
+    public bool ForgetMachine { get; }
 
 
 }
@@ -285,6 +369,12 @@ public class Enable2FAResponse
 
 public class Verify2FARequest
 {
-    public string UserId { get; set; }
-    public string TotpCode { get; set; }
+    public string UserId { get; }
+    public string TotpCode { get; }
+}
+
+public class UpdateUserRoleRequest
+{
+    public string UserId { get; init; }
+    public string RoleName { get; init; }
 }
