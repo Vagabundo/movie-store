@@ -4,10 +4,12 @@ namespace MovieStore.Domain;
 public class Branch : EntityBase
 {
     public Guid UserId { get; set; }
+#nullable disable
     [ForeignKey("UserId")]
     public virtual User BranchUser  { get; set; }
     public string Address { get; set; }
     public string City { get; set; }
     public string Country { get; set; }
     public string PostalCode { get; set; }
+#nullable enable
 }

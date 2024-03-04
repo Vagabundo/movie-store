@@ -43,7 +43,9 @@ builder.Services.AddStackExchangeRedisCache(redisOptions =>
 * Dependency Injection 
 ************************************************/
 // Auth
+#nullable disable
 builder.Services.AddSingleton(jwtOptions);
+#nullable enable
 builder.Services.AddScoped<UserManager<IdentityUser<Guid>>>();
 builder.Services.AddScoped<SignInManager<IdentityUser<Guid>>>();
 builder.Services.AddScoped<RoleManager<IdentityRole<Guid>>>();

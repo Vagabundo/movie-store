@@ -11,5 +11,5 @@ public interface IBranchService
     Task<IEnumerable<Movie>> GetMovies(Guid branchId);
     Task<Branch?> Update(Branch branch);
     Task<BranchMovie?> RemoveMovie(Guid branchId, Guid movieId);
-    Task<Branch> Delete(Guid branchId);
+    Task<Branch?> Delete(Guid branchId);
 }

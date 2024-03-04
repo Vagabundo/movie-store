@@ -103,6 +103,11 @@ public class AuthController : ControllerBase
     [HttpPost("confirm-email")]
     public async Task<IActionResult> ConfirmEmail(ConfirmEmailRequest model)
     {
+        if (model.UserId is null || model.ConfirmationCode is null)
+        {
+            return BadRequest($"User Id and Confirmation code must be not null");
+        }
+
         var user = await _userManager.FindByIdAsync(model.UserId);
         if (user == null)
         {
@@ -222,6 +227,11 @@ public class AuthController : ControllerBase
     [Authorize(Roles = IdentityData.AdminUserPolicyName)]
     public async Task<IActionResult> AddUserRole(UpdateUserRoleRequest model)
     {
+        if (model.UserId is null || model.RoleName is null)
+        {
+            return BadRequest($"User Id and Role name must be not null");
+        }
+
         var user = await _userManager.FindByIdAsync(model.UserId);
         if (user != null)
         {
@@ -242,20 +252,22 @@ public class AuthController : ControllerBase
     [Authorize(Roles = IdentityData.AdminUserPolicyName)]
     public async Task<IActionResult> RemoveUserRole(UpdateUserRoleRequest model)
     {
-        var user = await _userManager.FindByIdAsync(model.UserId);
-        if (user != null)
+        if (model.UserId is null || model.RoleName is null)
         {
-            var result = await _userManager.RemoveFromRoleAsync(user, model.RoleName);
-
-            return result.Succeeded
-            ? Ok($"Role {model.RoleName} removed from {user.UserName}")
-            : BadRequest($"Role {model.RoleName} failed to be removed from {user.UserName}");
-
+            return BadRequest($"User Id and Role name must be not null");
         }
-        else
+
+        var user = await _userManager.FindByIdAsync(model.UserId);
+        if (user is null)
         {
             return BadRequest($"User Id {model.UserId} doesn't exist");
         }
+
+        var result = await _userManager.RemoveFromRoleAsync(user, model.RoleName);
+
+        return result.Succeeded
+        ? Ok($"Role {model.RoleName} removed from {user.UserName}")
+        : BadRequest($"Role {model.RoleName} failed to be removed from {user.UserName}");
     }
 
     // // Helper method to generate a TOTP secret key
@@ -326,13 +338,13 @@ public class AccessTokenResponse
 
 public class ConfirmEmailRequest
 {
-    public string UserId { get; }
-    public string ConfirmationCode { get; }
+    public string? UserId { get; }
+    public string? ConfirmationCode { get; }
 }
 
 public class Enable2FARequest
 {
-    public string UserId { get; }
+    public string? UserId { get; }
     public bool? Enable { get; }
     public string? TwoFactorCode { get; }
     public bool ResetSharedKey { get; }
@@ -353,12 +365,12 @@ public class Enable2FAResponse
 
 public class Verify2FARequest
 {
-    public string UserId { get; }
-    public string TotpCode { get; }
+    public string? UserId { get; }
+    public string? TotpCode { get; }
 }
 
 public class UpdateUserRoleRequest
 {
-    public string UserId { get; init; }
-    public string RoleName { get; init; }
+    public string? UserId { get; init; }
+    public string? RoleName { get; init; }
 }

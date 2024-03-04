@@ -1,5 +1,6 @@
 namespace MovieStore.Api.Data;
 
+#nullable disable
 public class OrderRequest
 {
     public Guid BranchId { get; set; }
@@ -12,3 +13,4 @@ public class OrderResponse
     public string Text { get; set; }
     public OrderRequest Request { get; set; }
 }
+#nullable enable
