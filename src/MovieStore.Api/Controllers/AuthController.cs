@@ -346,7 +346,7 @@ public class Enable2FAResponse
 {
     public string? SharedKey { get; set; }
     public int RecoveryCodesLeft { get; set; }
-    public string[] RecoveryCodes { get; set; }
+    public string[]? RecoveryCodes { get; set; }
     public bool? IsTwoFactorEnable { get; set; }
     public bool IsMachineRemembered { get; set; }
 }

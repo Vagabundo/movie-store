@@ -15,7 +15,7 @@ public class OrderHub : Hub
 
     public override async Task OnConnectedAsync() 
     {
-        if (!Context.User.Identity.IsAuthenticated) 
+        if (Context.User is null || Context.User.Identity is null || !Context.User.Identity.IsAuthenticated)
         {
             Context.Abort();
             return;
