@@ -15,8 +15,43 @@ public class BranchService : IBranchService
         _branchRepository = branchRepository;
     }
 
+    public async Task<Branch> Add(Branch branch)
+    {
+        return await _branchRepository.Add(branch);
+    }
+
+    public async Task<BranchMovie> AddMovie(Guid branchId, Guid movieId)
+    {
+        return await _branchRepository.AddMovie(branchId, movieId);
+    }
+
+    public async Task<IEnumerable<Branch>> GetAll()
+    {
+        return await _branchRepository.GetAll();
+    }
+
     public async Task<Branch?> GetByUser (Guid userId)
     {
         return await _branchRepository.GetByUser(userId);
+    }
+
+    public async Task<IEnumerable<Movie>> GetMovies(Guid branchId)
+    {
+        return await _branchRepository.GetMovies(branchId);
+    }
+
+    public async Task<Branch?> Update(Branch branch)
+    {
+        return await _branchRepository.Update(branch);
+    }
+
+    public async Task<BranchMovie?> RemoveMovie(Guid branchId, Guid movieId)
+    {
+        return await _branchRepository.RemoveMovie(branchId, movieId);
+    }
+
+    public async Task<Branch?> Delete(Guid branchId)
+    {
+        return await _branchRepository.Delete(branchId);
     }
 }

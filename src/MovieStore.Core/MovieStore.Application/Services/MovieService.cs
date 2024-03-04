@@ -29,9 +29,9 @@ public class MovieService : IMovieService
     {
         return await _movieRepository.GetById(id);
     }
-    public async Task<Movie?> Modify(Movie movie)
+    public async Task<Movie?> Update(Movie movie)
     {
-        return await _movieRepository.Modify(movie);
+        return await _movieRepository.Update(movie);
     }
     public async Task<Movie?> Delete(Guid id)
     {

@@ -6,7 +6,7 @@ namespace MovieStore.Database;
 
 public class OrderRepository : IOrderRepository
 {
-    private MovieDbContext _dbContext;
+    private readonly MovieDbContext _dbContext;
     public OrderRepository(MovieDbContext dbContext)
     {
         _dbContext = dbContext;
@@ -48,7 +48,7 @@ public class OrderRepository : IOrderRepository
     #endregion
 
     #region Update
-    public async Task<Order?> Modify(Order order)
+    public async Task<Order?> Update(Order order)
     {
         var dbOrder = await _dbContext.Orders
         .Where(x => x.Id == order.Id && !x.IsDeleted)

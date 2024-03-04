@@ -1,0 +1,7 @@
+- Tests
+- Grafana & Prometheus
+- Kubernetes
+- OpenAPI
+- Azure
+- Aws
+- Error handling

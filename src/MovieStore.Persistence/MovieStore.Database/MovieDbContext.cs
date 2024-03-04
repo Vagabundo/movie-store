@@ -11,16 +11,25 @@ public class MovieDbContext : DbContext
     public DbSet<Movie> Movies { set; get; }
     public DbSet<Order> Orders { set; get; }
     public DbSet<Branch> Branches { set; get; }
+    public DbSet<BranchMovie> BranchMovies { set; get; }
     public DbSet<User> AuthUsers { set; get; }
 
-    // protected override void OnModelCreating(ModelBuilder modelBuilder)
-    // {
-    //     base.OnModelCreating(modelBuilder);
-    //     modelBuilder.Entity<UserProfile>().Property(b => b.IsDeleted).HasDefaultValue(false);
-    //     //modelBuilder.Entity<IdentityUser>().HasKey(u => u.Id);
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
 
-    //     modelBuilder.Entity<DeskTask>().Property(b => b.IsDeleted).HasDefaultValue(false);
+        //modelBuilder.Entity<IdentityUser>().HasKey(u => u.Id);
 
-    //     modelBuilder.Entity<Notification>().Property(b => b.IsDeleted).HasDefaultValue(false);
-    // }
+        modelBuilder.Entity<Branch>()
+                    .Property(b => b.UserId)  
+                    .HasDefaultValue(Guid.Empty);
+
+        modelBuilder.Entity<BranchMovie>()
+                    .HasKey(bm => new { bm.MovieId, bm.BranchId });
+
+        modelBuilder.Entity<BranchMovie>()
+                    .HasIndex(bm => new { bm.MovieId, bm.BranchId })
+                    .IsUnique()
+                    .HasFilter("[IsDeleted] = 0");
+    }
 }

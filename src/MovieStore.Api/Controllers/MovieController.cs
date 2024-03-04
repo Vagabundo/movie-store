@@ -29,35 +29,22 @@ public class MovieController : ControllerBase
         _logger.LogInformation($"Movie registration request received: {JsonConvert.SerializeObject(model)}");
 
         var result = await _movieService.Add(Mapper.Map<RegisterMovieRequest, Movie>(model));
+
         //var result = new { Succeeded = true, Errors = ""};
-        if (result is not null)
-        {
-            return Ok();
-        }
-        else
-        {
-            //return BadRequest(result.Errors);
-            return BadRequest();
-        }
+        //return BadRequest(result.Errors);
+
+        return result is null ? BadRequest() : Ok();
     }
 
-    [HttpPut("modify")]
+    [HttpPut]
     [Authorize(Roles = IdentityData.ManagerUserPolicyName)]
-    public async Task<IActionResult> Modify([FromBody] ModifyMovieRequest model)
+    public async Task<IActionResult> Update([FromBody] UpdateMovieRequest model)
     {
         _logger.LogInformation($"Movie modification request received: {JsonConvert.SerializeObject(model)}");
 
-        var result = await _movieService.Modify(Mapper.Map<ModifyMovieRequest, Movie>(model));
-        //var result = new { Succeeded = true, Errors = ""};
-        if (result is not null)
-        {
-            return Ok();
-        }
-        else
-        {
-            //return BadRequest(result.Errors);
-            return BadRequest();
-        }
+        var result = await _movieService.Update(Mapper.Map<UpdateMovieRequest, Movie>(model));
+
+        return result is null ? BadRequest() : Ok();
     }
 
     [HttpGet]
@@ -66,48 +53,14 @@ public class MovieController : ControllerBase
         _logger.LogInformation($"Movies request received");
 
         var movies = await _movieService.GetAll();
-        //var movies = new List<Movie>();
 
-        if (movies is null)
-        {
-            return NotFound("No movies found");
-        }
-
-        var moviesDic = movies
-            .Select(Mapper.Map<Movie, ModifyMovieRequest>)
+        return movies is null
+        ? NotFound("No movies found")
+        : Ok(movies
+            .Select(Mapper.Map<Movie, UpdateMovieRequest>)
             .GroupBy(movie => movie.Genre)
             .ToDictionary(
                 group => group.Key,
-                group => group.ToList());
-
-        return Ok(moviesDic);
-    }
-
-    [HttpGet("moviesbybranch/{branchId}")]
-    public async Task<IActionResult> GetMoviesByBranch([FromRoute] string branchId)
-    {
-        _logger.LogInformation($"Movies by branch {branchId} request received");
-
-        Guid branchGuid;
-        if (!Guid.TryParse(branchId, out branchGuid))
-        {
-            return NotFound("Invalid branch");
-        }
-        //var movies = await _movieService.GetByBranch(branchGuid);
-        var movies = new List<Movie>();
-
-        if (movies is null)
-        {
-            return NotFound("No movies found");
-        }
-
-        var moviesDic = movies
-            .Select(Mapper.Map<Movie, ModifyMovieRequest>)
-            .GroupBy(movie => movie.Genre)
-            .ToDictionary(
-                group => group.Key,
-                group => group.ToList());
-
-        return Ok(moviesDic);
+                group => group.ToList()));
     }
 }

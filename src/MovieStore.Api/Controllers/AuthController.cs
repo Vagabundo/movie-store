@@ -110,15 +110,12 @@ public class AuthController : ControllerBase
         }
 
         var result = await _userManager.ConfirmEmailAsync(user, model.ConfirmationCode);
-        if (result.Succeeded)
-        {
-            // Email confirmed successfully
-            return Ok("Email confirmed!");
-        }
-        else
-        {
-            return BadRequest("Email confirmation failed.");
-        }
+
+        // Email confirmed successfully
+        return result.Succeeded
+        ? Ok("Email confirmed!")
+        : BadRequest("Email confirmation failed.");
+
     }
 
     [HttpPost("resend-confirmation-email")]
@@ -157,15 +154,11 @@ public class AuthController : ControllerBase
         }
 
         var result = await _userManager.ResetPasswordAsync(user, model.ResetCode, model.NewPassword);
-        if (result.Succeeded)
-        {
-            // Password reset successful
-            return Ok("Password reset successful!");
-        }
-        else
-        {
-            return BadRequest("Password reset failed.");
-        }
+
+        // Password reset successful
+        return result.Succeeded
+        ? Ok("Password reset successful!")
+        : BadRequest("Password reset failed.");
     }
 
     // [HttpPost("enable-2fa")]
@@ -218,14 +211,11 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> AddRole(string name)
     {
         IdentityResult result = await _roleManager.CreateAsync(new IdentityRole<Guid>(name));
-        if (result.Succeeded)
-        {
-            return Ok($"Role {name} created");
-        }
-        else
-        {
-            return BadRequest($"Role {name} failed to be created");
-        }
+
+        return result.Succeeded
+        ? Ok($"Role {name} created")
+        : BadRequest($"Role {name} failed to be created");
+
     }
 
     [HttpPost("roles/addUserRole")]
@@ -236,14 +226,11 @@ public class AuthController : ControllerBase
         if (user != null)
         {
             var result = await _userManager.AddToRoleAsync(user, model.RoleName);
-            if (result.Succeeded)
-            {
-                return Ok($"Role {model.RoleName} added to {user.UserName}");
-            }
-            else
-            {
-                return BadRequest($"Role {model.RoleName} failed to be added to {user.UserName}");
-            }
+
+            return result.Succeeded
+            ? Ok($"Role {model.RoleName} added to {user.UserName}")
+            : BadRequest($"Role {model.RoleName} failed to be added to {user.UserName}");
+
         }
         else
         {
@@ -259,14 +246,11 @@ public class AuthController : ControllerBase
         if (user != null)
         {
             var result = await _userManager.RemoveFromRoleAsync(user, model.RoleName);
-            if (result.Succeeded)
-            {
-                return Ok($"Role {model.RoleName} removed from {user.UserName}");
-            }
-            else
-            {
-                return BadRequest($"Role {model.RoleName} failed to be removed from {user.UserName}");
-            }
+
+            return result.Succeeded
+            ? Ok($"Role {model.RoleName} removed from {user.UserName}")
+            : BadRequest($"Role {model.RoleName} failed to be removed from {user.UserName}");
+
         }
         else
         {

@@ -1,4 +1,5 @@
 namespace MovieStore.Domain;
+
 public class Movie : EntityBase
 {
     public string Title { get; set; }

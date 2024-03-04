@@ -17,6 +17,7 @@ public class MovieRepository : IMovieRepository
     }
 
     #region Create
+    
     public async Task<Movie> Add(Movie movie)
     {
         await _dbContext.Movies.AddAsync(movie);
@@ -27,15 +28,17 @@ public class MovieRepository : IMovieRepository
         .AsNoTracking()
         .ToListAsync();
 
-        await _cache.SetAsync("movie_" + movie.Id.ToString(), movie);
+        await _cache.SetAsync($"movie/{movie.Id}", movie);
         await _cache.SetAsync("movies", dbMovies);
         
 
         return movie;
     }
+
     #endregion
 
     #region Read
+
     public async Task<IEnumerable<Movie>> GetAll()
     {
         /* //longer, easier to understand version
@@ -66,7 +69,7 @@ public class MovieRepository : IMovieRepository
     public async Task<Movie?> GetById(Guid id)
     {
         return await _cache.GetAsync(
-            $"movie_{id}",
+            $"movie/{id}",
             async () =>
             {
                 return await _dbContext.Movies
@@ -77,17 +80,11 @@ public class MovieRepository : IMovieRepository
         );
     }
 
-    // public async Task<IEnumerable<Movie>> GetByBranch(Guid branchId)
-    // {
-    //     return await _dbContext.Movies
-    //     .AsNoTracking()
-    //     .Where(x => x.Id == id)
-    //     .FirstOrDefaultAsync();
-    // }
     #endregion
 
     #region Update
-    public async Task<Movie?> Modify(Movie movie)
+
+    public async Task<Movie?> Update(Movie movie)
     {
         var dbMovie = await _dbContext.Movies
         .Where(x => x.Id == movie.Id && !x.IsDeleted)
@@ -105,19 +102,21 @@ public class MovieRepository : IMovieRepository
             await _dbContext.SaveChangesAsync();
         }
 
+        await _cache.SetAsync($"movie/{movie.Id}", movie);
+
         //this or create a bulk set and get by prefix
         var movies = await _dbContext.Movies
         .AsNoTracking()
         .ToListAsync();
-
-        await _cache.SetAsync("movie_" + movie.Id.ToString(), movie);
         await _cache.SetAsync("movies", movies);
 
         return dbMovie;
     }
+
     #endregion
 
     #region Delete
+
     public async Task<Movie?> Delete(Guid id)
     {
         var movie = await _dbContext.Movies
@@ -129,16 +128,18 @@ public class MovieRepository : IMovieRepository
             movie.IsDeleted = true;
             await _dbContext.SaveChangesAsync();
 
+            await _cache.RemoveAsync($"movie/{id}");
+
             // this or create a bulk set and get by prefix
             var movies = await _dbContext.Movies
             .AsNoTracking()
             .ToListAsync();
 
-            await _cache.RemoveAsync("movie_" + id.ToString());
             await _cache.SetAsync("movies", movies);
         }
 
         return movie;
     }
+
     #endregion
 }

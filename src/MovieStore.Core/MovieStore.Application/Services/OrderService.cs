@@ -29,9 +29,9 @@ public class OrderService : IOrderService
     {
         return await _orderRepository.GetById(id);
     }
-    public async Task<Order?> Modify(Order order)
+    public async Task<Order?> Update(Order order)
     {
-        return await _orderRepository.Modify(order);
+        return await _orderRepository.Update(order);
     }
     public async Task<Order?> Delete(Guid id)
     {
