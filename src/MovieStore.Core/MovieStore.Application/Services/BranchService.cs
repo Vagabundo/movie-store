@@ -15,13 +15,23 @@ public class BranchService : IBranchService
         _branchRepository = branchRepository;
     }
 
-    public async Task<Branch> Add(Branch branch)
+    public async Task<Branch?> Add(Branch branch)
     {
+        if (branch.UserId == Guid.Empty || string.IsNullOrEmpty(branch.Address) || string.IsNullOrEmpty(branch.City) ||
+            string.IsNullOrEmpty(branch.Country) || string.IsNullOrEmpty(branch.PostalCode))
+        {
+            return null;
+        }
+
         return await _branchRepository.Add(branch);
     }
 
-    public async Task<BranchMovie> AddMovie(Guid branchId, Guid movieId)
+    public async Task<BranchMovie?> AddMovie(Guid branchId, Guid movieId)
     {
+        if (branchId == Guid.Empty || movieId == Guid.Empty)
+        {
+            return null;
+        }
         return await _branchRepository.AddMovie(branchId, movieId);
     }
 
